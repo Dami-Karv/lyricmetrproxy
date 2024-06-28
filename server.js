@@ -8,42 +8,47 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 
+// Search route
 app.get('/search', async (req, res) => {
   const query = req.query.q;
   try {
-    const response = await axios.get(`https://api.genius.com/search`, {
-      params: { q: query },
+    const response = await axios.get(`https://api.genius.com/search?q=${encodeURIComponent(query)}`, {
       headers: {
-        Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`
+        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
       }
     });
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: 'Error searching Genius API' });
+    console.error('Error fetching search results from Genius API:', error);
+    res.status(500).json({ error: 'Error fetching search results from Genius API' });
   }
 });
 
+// Song route
 app.get('/songs/:id', async (req, res) => {
   const songId = req.params.id;
   try {
     const response = await axios.get(`https://api.genius.com/songs/${songId}`, {
       headers: {
-        Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`
+        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
       }
     });
     res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching data from Genius API' });
+    console.error('Error fetching song from Genius API:', error);
+    res.status(500).json({ error: 'Error fetching song from Genius API' });
   }
 });
 
+// Lyrics route
 app.get('/lyrics', async (req, res) => {
   const songPath = req.query.path;
   try {
     const response = await axios.get(`https://genius.com${songPath}`);
     res.send(response.data);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching lyrics' });
+    console.error('Error fetching lyrics from Genius:', error);
+    res.status(500).json({ error: 'Error fetching lyrics from Genius' });
   }
 });
 
