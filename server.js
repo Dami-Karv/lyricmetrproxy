@@ -1,3 +1,4 @@
+// server.js (Proxy Server)
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -43,8 +44,11 @@ app.get('/songs/:id', async (req, res) => {
 // Lyrics route
 app.get('/lyrics', async (req, res) => {
   const songPath = req.query.path;
+  const url = `https://genius.com${songPath}`;
+  console.log(`Fetching lyrics from URL: ${url}`);
   try {
-    const response = await axios.get(`https://genius.com${songPath}`);
+    const response = await axios.get(url);
+    console.log('Response from Genius lyrics page:', response.data);
     res.send(response.data);
   } catch (error) {
     console.error('Error fetching lyrics from Genius:', error);
