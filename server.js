@@ -8,6 +8,21 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 
+app.get('/search', async (req, res) => {
+  const query = req.query.q;
+  try {
+    const response = await axios.get(`https://api.genius.com/search`, {
+      params: { q: query },
+      headers: {
+        Authorization: `Bearer ${process.env.GENIUS_ACCESS_TOKEN}`
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error searching Genius API' });
+  }
+});
+
 app.get('/songs/:id', async (req, res) => {
   const songId = req.params.id;
   try {
