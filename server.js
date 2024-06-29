@@ -73,22 +73,22 @@ app.get('/artists/:id/albums', async (req, res) => {
   }
 });
 
-// Album details route
-app.get('/albums/:id', async (req, res) => {
+// Album tracks route
+app.get('/albums/:id/tracks', async (req, res) => {
   const albumId = req.params.id;
   try {
-    const response = await axios.get(`https://api.genius.com/albums/${albumId}`, {
+    const response = await axios.get(`https://api.genius.com/albums/${albumId}/tracks`, {
       headers: {
         Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
       }
     });
     res.json(response.data);
   } catch (error) {
-    console.error('Error fetching album details from Genius API:', error.message);
-    console.error('Full error details:', error.response ? error.response.data : error);
-    res.status(500).json({ error: 'Error fetching album details from Genius API' });
+    console.error('Error fetching album tracks from Genius API:', error.message);
+    res.status(500).json({ error: 'Error fetching album tracks from Genius API' });
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
