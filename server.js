@@ -68,6 +68,7 @@ app.get('/artists/:id/albums', async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error('Error fetching artist albums from Genius API:', error.message);
+    console.error('Full error details:', error.response ? error.response.data : error);
     res.status(500).json({ error: 'Error fetching artist albums from Genius API' });
   }
 });
@@ -84,6 +85,7 @@ app.get('/albums/:id', async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error('Error fetching album details from Genius API:', error.message);
+    console.error('Full error details:', error.response ? error.response.data : error);
     res.status(500).json({ error: 'Error fetching album details from Genius API' });
   }
 });
