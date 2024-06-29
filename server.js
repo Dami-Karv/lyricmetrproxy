@@ -1,4 +1,3 @@
-// server.js (Proxy Server)
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -64,6 +63,12 @@ app.get('/artists/:id/albums', async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error('Error fetching artist albums from Genius API:', error.message);
+    if (error.response) {
+      console.error('Error status:', error.response.status);
+      console.error('Error data:', error.response.data);
+    } else {
+      console.error('Error details:', error);
+    }
     res.status(500).json({ error: 'Error fetching artist albums from Genius API' });
   }
 });
@@ -79,11 +84,16 @@ app.get('/albums/:id', async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error('Error fetching album details from Genius API:', error.message);
+    if (error.response) {
+      console.error('Error status:', error.response.status);
+      console.error('Error data:', error.response.data);
+    } else {
+      console.error('Error details:', error);
+    }
     res.status(500).json({ error: 'Error fetching album details from Genius API' });
   }
 });
 
-// New route for album tracks
 app.get('/albums/:id/tracks', async (req, res) => {
   const albumId = req.params.id;
   try {
@@ -95,6 +105,12 @@ app.get('/albums/:id/tracks', async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error('Error fetching album tracks from Genius API:', error.message);
+    if (error.response) {
+      console.error('Error status:', error.response.status);
+      console.error('Error data:', error.response.data);
+    } else {
+      console.error('Error details:', error);
+    }
     res.status(500).json({ error: 'Error fetching album tracks from Genius API' });
   }
 });
