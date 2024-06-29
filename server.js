@@ -9,7 +9,6 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 
-// Search route
 app.get('/search', async (req, res) => {
   const query = req.query.q;
   try {
@@ -25,7 +24,6 @@ app.get('/search', async (req, res) => {
   }
 });
 
-// Song route
 app.get('/songs/:id', async (req, res) => {
   const songId = req.params.id;
   try {
@@ -41,7 +39,6 @@ app.get('/songs/:id', async (req, res) => {
   }
 });
 
-// Lyrics route
 app.get('/lyrics', async (req, res) => {
   const songPath = req.query.path;
   const url = `https://genius.com${songPath}`;
@@ -56,7 +53,6 @@ app.get('/lyrics', async (req, res) => {
   }
 });
 
-// Artist albums route
 app.get('/artists/:id/albums', async (req, res) => {
   const artistId = req.params.id;
   try {
@@ -68,12 +64,26 @@ app.get('/artists/:id/albums', async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error('Error fetching artist albums from Genius API:', error.message);
-    console.error('Full error details:', error.response ? error.response.data : error);
     res.status(500).json({ error: 'Error fetching artist albums from Genius API' });
   }
 });
 
-// Album tracks route
+app.get('/albums/:id', async (req, res) => {
+  const albumId = req.params.id;
+  try {
+    const response = await axios.get(`https://api.genius.com/albums/${albumId}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching album details from Genius API:', error.message);
+    res.status(500).json({ error: 'Error fetching album details from Genius API' });
+  }
+});
+
+// New route for album tracks
 app.get('/albums/:id/tracks', async (req, res) => {
   const albumId = req.params.id;
   try {
@@ -88,7 +98,6 @@ app.get('/albums/:id/tracks', async (req, res) => {
     res.status(500).json({ error: 'Error fetching album tracks from Genius API' });
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
