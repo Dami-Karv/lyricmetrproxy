@@ -20,7 +20,7 @@ app.get('/search', async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
-    console.error('Error fetching search results from Genius API:', error);
+    console.error('Error fetching search results from Genius API:', error.message);
     res.status(500).json({ error: 'Error fetching search results from Genius API' });
   }
 });
@@ -36,7 +36,7 @@ app.get('/songs/:id', async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
-    console.error('Error fetching song from Genius API:', error);
+    console.error('Error fetching song from Genius API:', error.message);
     res.status(500).json({ error: 'Error fetching song from Genius API' });
   }
 });
@@ -51,7 +51,7 @@ app.get('/lyrics', async (req, res) => {
     console.log('Response from Genius lyrics page:', response.data);
     res.send(response.data);
   } catch (error) {
-    console.error('Error fetching lyrics from Genius:', error);
+    console.error('Error fetching lyrics from Genius:', error.message);
     res.status(500).json({ error: 'Error fetching lyrics from Genius' });
   }
 });
@@ -67,7 +67,7 @@ app.get('/artists/:id/albums', async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
-    console.error('Error fetching artist albums from Genius API:', error);
+    console.error('Error fetching artist albums from Genius API:', error.message);
     res.status(500).json({ error: 'Error fetching artist albums from Genius API' });
   }
 });
@@ -83,7 +83,7 @@ app.get('/albums/:id', async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
-    console.error('Error fetching album details from Genius API:', error);
+    console.error('Error fetching album details from Genius API:', error.message);
     res.status(500).json({ error: 'Error fetching album details from Genius API' });
   }
 });
