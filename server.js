@@ -56,6 +56,38 @@ app.get('/lyrics', async (req, res) => {
   }
 });
 
+// Artist albums route
+app.get('/artists/:id/albums', async (req, res) => {
+  const artistId = req.params.id;
+  try {
+    const response = await axios.get(`https://api.genius.com/artists/${artistId}/albums`, {
+      headers: {
+        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching artist albums from Genius API:', error);
+    res.status(500).json({ error: 'Error fetching artist albums from Genius API' });
+  }
+});
+
+// Album details route
+app.get('/albums/:id', async (req, res) => {
+  const albumId = req.params.id;
+  try {
+    const response = await axios.get(`https://api.genius.com/albums/${albumId}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching album details from Genius API:', error);
+    res.status(500).json({ error: 'Error fetching album details from Genius API' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
