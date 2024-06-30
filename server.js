@@ -99,10 +99,16 @@ app.get('/artists/:id/albums', async (req, res) => {
   const artistId = req.params.id;
 
   try {
-    const response = await axios.get(`https://api.genius.com/artists/${artistId}/albums`, {
+    const response = await axios.get(`https://api.genius.com/artists/${artistId}`, {
       headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
     });
-    res.json(response.data.response.albums);
+
+    const artistInfo = response.data.response.artist;
+
+    // Extract albums from the artist information (if available)
+    const albums = artistInfo.albums || [];
+
+    res.json(albums);
   } catch (error) {
     console.error('Error fetching artist albums:', error.message);
     res.status(500).json({ error: 'Error fetching artist albums' });
