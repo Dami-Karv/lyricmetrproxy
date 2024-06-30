@@ -23,6 +23,7 @@ app.get('/search', async (req, res) => {
 
   try {
     const results = await searchSong(options);
+    console.log('Search results:', JSON.stringify(results, null, 2));
     res.json(results);
   } catch (error) {
     console.error('Error searching for song:', error.message);
@@ -36,6 +37,7 @@ app.get('/songs/:id', async (req, res) => {
 
   try {
     const song = await getSongById(songId, GENIUS_ACCESS_TOKEN);
+    console.log('Song details:', JSON.stringify(song, null, 2));
     res.json(song);
   } catch (error) {
     console.error('Error fetching song details:', error.message);
@@ -50,10 +52,7 @@ app.get('/lyrics', async (req, res) => {
   try {
     console.log(`Fetching lyrics for path: ${songPath}`);
     
-    // Remove the leading slash if present
     const cleanPath = songPath.startsWith('/') ? songPath.slice(1) : songPath;
-    
-    // Construct the full URL without encoding
     const fullUrl = `https://genius.com/${cleanPath}`;
     
     console.log(`Attempting to fetch lyrics from: ${fullUrl}`);
@@ -80,6 +79,8 @@ app.get('/search-artist', async (req, res) => {
       headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
     });
 
+    console.log('Artist search response:', JSON.stringify(response.data, null, 2));
+
     const hits = response.data.response.hits;
     const artists = hits.filter(hit => hit.result.primary_artist.url.includes('/artists/'))
                         .map(hit => ({
@@ -88,7 +89,6 @@ app.get('/search-artist', async (req, res) => {
                           url: hit.result.primary_artist.url
                         }));
 
-    // Remove duplicates based on artist ID
     const uniqueArtists = Array.from(new Set(artists.map(a => a.id)))
       .map(id => artists.find(a => a.id === id));
 
@@ -112,23 +112,36 @@ app.get('/artists/:id/songs', async (req, res) => {
         headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
       });
 
-      console.log('Response Status:', response.status);
-      console.log('Response Data:', response.data);
+      console.log('Artist songs response:', JSON.stringify(response.data, null, 2));
 
       const songs = response.data.response.songs;
       if (songs.length === 0) break;
 
       allSongs = allSongs.concat(songs);
       page++;
+
+      // Limit to 5 pages to avoid potential infinite loops
+      if (page > 5) break;
+    }
+
+    // Log a sample song to check its structure
+    if (allSongs.length > 0) {
+      console.log('Sample song data:', JSON.stringify(allSongs[0], null, 2));
     }
 
     // Sort the songs by release date
-    allSongs.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
+    allSongs.sort((a, b) => {
+      const dateA = a.release_date ? new Date(a.release_date) : new Date(0);
+      const dateB = b.release_date ? new Date(b.release_date) : new Date(0);
+      return dateA - dateB;
+    });
 
     res.json(allSongs);
   } catch (error) {
     console.error('Error fetching artist songs:', error.message);
-    console.error('Error Response:', error.response.data);
+    if (error.response) {
+      console.error('Error Response:', error.response.data);
+    }
     res.status(500).json({ error: 'Error fetching artist songs' });
   }
 });
