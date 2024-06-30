@@ -112,6 +112,22 @@ app.get('/artists/:id/albums', async (req, res) => {
   }
 });
 
+app.get('/artists/:id/songs', async (req, res) => {
+  const artistId = req.params.id;
+
+  try {
+    const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
+      headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
+    });
+
+    const songs = response.data.response.songs;
+    res.json(songs);
+  } catch (error) {
+    console.error('Error fetching artist songs:', error.message);
+    res.status(500).json({ error: 'Error fetching artist songs' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
