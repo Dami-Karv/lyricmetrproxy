@@ -62,7 +62,6 @@ app.get('/lyrics', async (req, res) => {
     res.send(lyrics);
   } catch (error) {
     console.error('Error fetching lyrics:', error.message);
-    console.error('Full error:', error);
     res.status(500).json({ error: `Error fetching lyrics: ${error.message}` });
   }
 });
@@ -99,14 +98,12 @@ app.get('/artists/:id/albums', async (req, res) => {
   const artistId = req.params.id;
 
   try {
-    const response = await axios.get(`https://api.genius.com/artists/${artistId}`, {
+    const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
       headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
     });
 
-    const artistInfo = response.data.response.artist;
-
-    // Extract albums from the artist information (if available)
-    const albums = artistInfo.albums || [];
+    const songs = response.data.response.songs;
+    const albums = [...new Set(songs.map(song => song.album))].filter(album => album !== null);
 
     res.json(albums);
   } catch (error) {
