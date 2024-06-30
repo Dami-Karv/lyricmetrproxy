@@ -68,23 +68,32 @@ app.get('/lyrics', async (req, res) => {
 });
 
 app.get('/search-artist', async (req, res) => {
-  const query = req.query.q;
-  const options = {
-    apiKey: GENIUS_ACCESS_TOKEN,
-    title: query,
-    optimizeQuery: true
-  };
-
-  try {
-    const results = await searchSong(options);
-    // Filter results to only include artists
-    const artists = results.filter(result => result.type === 'artist');
-    res.json(artists);
-  } catch (error) {
-    console.error('Error searching for artist:', error.message);
-    res.status(500).json({ error: 'Error searching for artist' });
-  }
-});
+    const query = req.query.q;
+  
+    try {
+      const response = await axios.get('https://api.genius.com/search', {
+        params: { q: query },
+        headers: { 'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}` }
+      });
+  
+      const hits = response.data.response.hits;
+      const artists = hits.filter(hit => hit.result.primary_artist.url.includes('/artists/'))
+                          .map(hit => ({
+                            id: hit.result.primary_artist.id,
+                            name: hit.result.primary_artist.name,
+                            url: hit.result.primary_artist.url
+                          }));
+  
+      // Remove duplicates based on artist ID
+      const uniqueArtists = Array.from(new Set(artists.map(a => a.id)))
+        .map(id => artists.find(a => a.id === id));
+  
+      res.json(uniqueArtists);
+    } catch (error) {
+      console.error('Error searching for artist:', error.message);
+      res.status(500).json({ error: 'Error searching for artist: ' + error.message });
+    }
+  });
 
 app.get('/artist-albums/:artistId', async (req, res) => {
   const artistId = req.params.artistId;
