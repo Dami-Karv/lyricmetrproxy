@@ -101,50 +101,67 @@ app.get('/search-artist', async (req, res) => {
 
 // Endpoint to get songs of an artist by ID
 app.get('/artists/:id/songs', async (req, res) => {
-  const artistId = req.params.id;
-  let page = 1;
-  let allSongs = [];
-
-  try {
-    while (true) {
-      const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
-        params: { page },
-        headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
+    const artistId = req.params.id;
+    let page = 1;
+    let allSongs = [];
+  
+    try {
+      while (true) {
+        const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
+          params: { page, sort: 'release_date' },  // Sort by release date
+          headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
+        });
+  
+        console.log('Artist songs response:', JSON.stringify(response.data, null, 2));
+  
+        const songs = response.data.response.songs;
+        if (songs.length === 0) break;
+  
+        allSongs = allSongs.concat(songs);
+        page++;
+  
+        // Limit to 5 pages to avoid potential infinite loops
+        if (page > 5) break;
+      }
+  
+      // Log a sample song to check its structure
+      if (allSongs.length > 0) {
+        console.log('Sample song data:', JSON.stringify(allSongs[0], null, 2));
+        console.log('Sample song release date components:', allSongs[0]?.release_date_components);
+      }
+  
+      // Sort the songs by release date
+      allSongs.sort((a, b) => {
+        const dateA = a.release_date_components ? 
+          new Date(a.release_date_components.year, a.release_date_components.month - 1, a.release_date_components.day) : 
+          new Date(0);
+        const dateB = b.release_date_components ? 
+          new Date(b.release_date_components.year, b.release_date_components.month - 1, b.release_date_components.day) : 
+          new Date(0);
+        return dateA - dateB;
       });
-
-      console.log('Artist songs response:', JSON.stringify(response.data, null, 2));
-
-      const songs = response.data.response.songs;
-      if (songs.length === 0) break;
-
-      allSongs = allSongs.concat(songs);
-      page++;
-
-      // Limit to 5 pages to avoid potential infinite loops
-      if (page > 5) break;
+  
+      // Map the songs to include formatted release dates
+      const formattedSongs = allSongs.map(song => ({
+        ...song,
+        formatted_release_date: song.release_date_components ? 
+          new Date(song.release_date_components.year, song.release_date_components.month - 1, song.release_date_components.day).toLocaleDateString(undefined, { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }) : 
+          'Unknown Date'
+      }));
+  
+      res.json(formattedSongs);
+    } catch (error) {
+      console.error('Error fetching artist songs:', error.message);
+      if (error.response) {
+        console.error('Error Response:', error.response.data);
+      }
+      res.status(500).json({ error: 'Error fetching artist songs' });
     }
-
-    // Log a sample song to check its structure
-    if (allSongs.length > 0) {
-      console.log('Sample song data:', JSON.stringify(allSongs[0], null, 2));
-    }
-
-    // Sort the songs by release date
-    allSongs.sort((a, b) => {
-      const dateA = a.release_date ? new Date(a.release_date) : new Date(0);
-      const dateB = b.release_date ? new Date(b.release_date) : new Date(0);
-      return dateA - dateB;
-    });
-
-    res.json(allSongs);
-  } catch (error) {
-    console.error('Error fetching artist songs:', error.message);
-    if (error.response) {
-      console.error('Error Response:', error.response.data);
-    }
-    res.status(500).json({ error: 'Error fetching artist songs' });
-  }
-});
+  });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
