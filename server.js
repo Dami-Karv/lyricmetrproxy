@@ -41,17 +41,20 @@ app.get('/songs/:id', async (req, res) => {
 
 app.get('/lyrics', async (req, res) => {
   const songPath = req.query.path;
-  const options = {
-    apiKey: GENIUS_ACCESS_TOKEN,
-    title: '',
-    artist: '',
-    optimizeQuery: true
-  };
 
   try {
     console.log(`Fetching lyrics for path: ${songPath}`);
-    const encodedPath = encodeURIComponent(songPath);
-    const lyrics = await getLyrics(`https://genius.com${encodedPath}`);
+    
+    // Remove the leading slash if present
+    const cleanPath = songPath.startsWith('/') ? songPath.slice(1) : songPath;
+    
+    // Construct the full URL without encoding
+    const fullUrl = `https://genius.com/${cleanPath}`;
+    
+    console.log(`Attempting to fetch lyrics from: ${fullUrl}`);
+    
+    const lyrics = await getLyrics(fullUrl);
+    
     if (!lyrics) {
       return res.status(404).json({ error: 'Lyrics not found' });
     }
