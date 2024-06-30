@@ -17,13 +17,11 @@ app.get('/search', async (req, res) => {
   const options = {
     apiKey: GENIUS_ACCESS_TOKEN,
     title: query,
-    artist: '',
     optimizeQuery: true
   };
 
   try {
     const results = await searchSong(options);
-    console.log('Search results:', JSON.stringify(results, null, 2));
     res.json(results);
   } catch (error) {
     console.error('Error searching for song:', error.message);
