@@ -108,7 +108,7 @@ app.get('/artists/:id/songs', async (req, res) => {
   try {
     while (true) {
       const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
-        params: { page, sort: 'asc' },
+        params: { page },
         headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
       });
 
