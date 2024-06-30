@@ -57,7 +57,7 @@ app.get('/lyrics', async (req, res) => {
   } catch (error) {
     console.error('Error fetching lyrics:', error.message);
     console.error('Full error:', error);
-    res.status(500).json({ error: 'Error fetching lyrics' });
+    res.status(500).json({ error: `Error fetching lyrics: ${error.message}` });
   }
 });
 
