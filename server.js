@@ -46,10 +46,7 @@ app.get('/lyrics', async (req, res) => {
   try {
     console.log(`Fetching lyrics for path: ${songPath}`);
     
-    // Remove the leading slash if present
     const cleanPath = songPath.startsWith('/') ? songPath.slice(1) : songPath;
-    
-    // Construct the full URL without encoding
     const fullUrl = `https://genius.com/${cleanPath}`;
     
     console.log(`Attempting to fetch lyrics from: ${fullUrl}`);
@@ -83,7 +80,6 @@ app.get('/search-artist', async (req, res) => {
                           url: hit.result.primary_artist.url
                         }));
 
-    // Remove duplicates based on artist ID
     const uniqueArtists = Array.from(new Set(artists.map(a => a.id)))
       .map(id => artists.find(a => a.id === id));
 
@@ -112,19 +108,25 @@ app.get('/artists/:id/albums', async (req, res) => {
   }
 });
 
-app.get('/artists/:id/songs', async (req, res) => {
-  const artistId = req.params.id;
+// New endpoint to fetch album URLs and lookup data
+app.get('/albums/:id/details', async (req, res) => {
+  const albumId = req.params.id;
+  const albumUrl = `https://genius.com/albums/Jay-z/${albumId}`; // Example, replace as needed
 
   try {
-    const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
+    const response = await axios.get('https://api.genius.com/web_pages/lookup', {
+      params: {
+        raw_annotatable_url: albumUrl,
+        canonical_url: albumUrl,
+        og_url: albumUrl
+      },
       headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
     });
 
-    const songs = response.data.response.songs;
-    res.json(songs);
+    res.json(response.data);
   } catch (error) {
-    console.error('Error fetching artist songs:', error.message);
-    res.status(500).json({ error: 'Error fetching artist songs' });
+    console.error('Error fetching album details:', error.message);
+    res.status(500).json({ error: 'Error fetching album details' });
   }
 });
 
