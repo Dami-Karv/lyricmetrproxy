@@ -68,39 +68,39 @@ app.get('/lyrics', async (req, res) => {
 });
 
 app.get('/search-artist', async (req, res) => {
-    const query = req.query.q;
-  
-    try {
-      const response = await axios.get('https://api.genius.com/search', {
-        params: { q: query },
-        headers: { 'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}` }
-      });
-  
-      const hits = response.data.response.hits;
-      const artists = hits.filter(hit => hit.result.primary_artist.url.includes('/artists/'))
-                          .map(hit => ({
-                            id: hit.result.primary_artist.id,
-                            name: hit.result.primary_artist.name,
-                            url: hit.result.primary_artist.url
-                          }));
-  
-      // Remove duplicates based on artist ID
-      const uniqueArtists = Array.from(new Set(artists.map(a => a.id)))
-        .map(id => artists.find(a => a.id === id));
-  
-      res.json(uniqueArtists);
-    } catch (error) {
-      console.error('Error searching for artist:', error.message);
-      res.status(500).json({ error: 'Error searching for artist: ' + error.message });
-    }
-  });
+  const query = req.query.q;
 
-app.get('/artist-albums/:artistId', async (req, res) => {
-  const artistId = req.params.artistId;
+  try {
+    const response = await axios.get('https://api.genius.com/search', {
+      params: { q: query },
+      headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
+    });
+
+    const hits = response.data.response.hits;
+    const artists = hits.filter(hit => hit.result.primary_artist.url.includes('/artists/'))
+                        .map(hit => ({
+                          id: hit.result.primary_artist.id,
+                          name: hit.result.primary_artist.name,
+                          url: hit.result.primary_artist.url
+                        }));
+
+    // Remove duplicates based on artist ID
+    const uniqueArtists = Array.from(new Set(artists.map(a => a.id)))
+      .map(id => artists.find(a => a.id === id));
+
+    res.json(uniqueArtists);
+  } catch (error) {
+    console.error('Error searching for artist:', error.message);
+    res.status(500).json({ error: 'Error searching for artist: ' + error.message });
+  }
+});
+
+app.get('/artists/:id/albums', async (req, res) => {
+  const artistId = req.params.id;
 
   try {
     const response = await axios.get(`https://api.genius.com/artists/${artistId}/albums`, {
-      headers: { 'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}` }
+      headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
     });
     res.json(response.data.response.albums);
   } catch (error) {
