@@ -11,6 +11,7 @@ app.use(cors());
 
 const GENIUS_ACCESS_TOKEN = process.env.REACT_APP_GENIUS_ACCESS_TOKEN || 'bvo-JN81MSCiz4axQKZVhcBPFTwNiYXrmqXAr2A0_Et_wbtfPe4kU4h2wYO5hQ7o';
 
+// Endpoint to search for songs
 app.get('/search', async (req, res) => {
   const query = req.query.q;
   const options = {
@@ -29,6 +30,7 @@ app.get('/search', async (req, res) => {
   }
 });
 
+// Endpoint to get details of a song by ID
 app.get('/songs/:id', async (req, res) => {
   const songId = req.params.id;
 
@@ -41,6 +43,7 @@ app.get('/songs/:id', async (req, res) => {
   }
 });
 
+// Endpoint to get lyrics of a song by path
 app.get('/lyrics', async (req, res) => {
   const songPath = req.query.path;
 
@@ -67,6 +70,7 @@ app.get('/lyrics', async (req, res) => {
   }
 });
 
+// Endpoint to search for an artist
 app.get('/search-artist', async (req, res) => {
   const query = req.query.q;
 
@@ -95,6 +99,7 @@ app.get('/search-artist', async (req, res) => {
   }
 });
 
+// Endpoint to get songs of an artist by ID
 app.get('/artists/:id/songs', async (req, res) => {
   const artistId = req.params.id;
   let page = 1;
@@ -106,6 +111,9 @@ app.get('/artists/:id/songs', async (req, res) => {
         params: { page, sort: 'asc' },
         headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
       });
+
+      console.log('Response Status:', response.status);
+      console.log('Response Data:', response.data);
 
       const songs = response.data.response.songs;
       if (songs.length === 0) break;
@@ -120,6 +128,7 @@ app.get('/artists/:id/songs', async (req, res) => {
     res.json(allSongs);
   } catch (error) {
     console.error('Error fetching artist songs:', error.message);
+    console.error('Error Response:', error.response.data);
     res.status(500).json({ error: 'Error fetching artist songs' });
   }
 });
