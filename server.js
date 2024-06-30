@@ -41,12 +41,22 @@ app.get('/songs/:id', async (req, res) => {
 
 app.get('/lyrics', async (req, res) => {
   const songPath = req.query.path;
+  const options = {
+    apiKey: GENIUS_ACCESS_TOKEN,
+    title: '',
+    artist: ''
+  };
 
   try {
+    console.log(`Fetching lyrics for path: ${songPath}`);
     const lyrics = await getLyrics(songPath);
+    if (!lyrics) {
+      return res.status(404).json({ error: 'Lyrics not found' });
+    }
     res.send(lyrics);
   } catch (error) {
     console.error('Error fetching lyrics:', error.message);
+    console.error('Full error:', error);
     res.status(500).json({ error: 'Error fetching lyrics' });
   }
 });
