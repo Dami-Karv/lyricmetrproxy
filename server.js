@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const { exec } = require('child_process');
 const { getLyrics, getSong, searchSong, getSongById } = require('genius-lyrics-api');
 
 const app = express();
@@ -8,7 +10,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 
-const GENIUS_ACCESS_TOKEN = 'bvo-JN81MSCiz4axQKZVhcBPFTwNiYXrmqXAr2A0_Et_wbtfPe4kU4h2wYO5hQ7o';
+const GENIUS_ACCESS_TOKEN = process.env.REACT_APP_GENIUS_ACCESS_TOKEN || 'bvo-JN81MSCiz4axQKZVhcBPFTwNiYXrmqXAr2A0_Et_wbtfPe4kU4h2wYO5hQ7o';
 
 app.get('/search', async (req, res) => {
   const query = req.query.q;
@@ -94,22 +96,23 @@ app.get('/search-artist', async (req, res) => {
   }
 });
 
-app.get('/artists/:id/albums', async (req, res) => {
+app.get('/artists/:id/albums', (req, res) => {
   const artistId = req.params.id;
 
-  try {
-    const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
-      headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
-    });
+  exec(`python fetch_album_details.py ${artistId}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing python script: ${error.message}`);
+      res.status(500).json({ error: 'Error fetching artist albums' });
+      return;
+    }
+    if (stderr) {
+      console.error(`stderr: ${stderr}`);
+      res.status(500).json({ error: 'Error fetching artist albums' });
+      return;
+    }
 
-    const songs = response.data.response.songs;
-    const albums = [...new Set(songs.map(song => song.album))].filter(album => album !== null);
-
-    res.json(albums);
-  } catch (error) {
-    console.error('Error fetching artist albums:', error.message);
-    res.status(500).json({ error: 'Error fetching artist albums' });
-  }
+    res.json(JSON.parse(stdout));
+  });
 });
 
 app.get('/artists/:id/songs', async (req, res) => {
