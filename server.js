@@ -7,9 +7,17 @@ const { getLyrics, getSong, searchSong, getSongById } = require('genius-lyrics-a
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Enable CORS for all routes
 app.use(cors());
 
-const GENIUS_ACCESS_TOKEN = process.env.REACT_APP_GENIUS_ACCESS_TOKEN || 'bvo-JN81MSCiz4axQKZVhcBPFTwNiYXrmqXAr2A0_Et_wbtfPe4kU4h2wYO5hQ7o';
+// Directly paste the Genius access token here
+const GENIUS_ACCESS_TOKEN = 'bvo-JN81MSCiz4axQKZVhcBPFTwNiYXrmqXAr2A0_Et_wbtfPe4kU4h2wYO5hQ7o';
+
+// Middleware to log all incoming requests
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
 
 // Endpoint to search for songs
 app.get('/search', async (req, res) => {
@@ -22,10 +30,11 @@ app.get('/search', async (req, res) => {
 
   try {
     const results = await searchSong(options);
+    console.log('Search results:', JSON.stringify(results, null, 2));
     res.json(results);
   } catch (error) {
-    console.error('Error searching for song:', error.message);
-    res.status(500).json({ error: 'Error searching for song' });
+    console.error('Error searching for song:', error);
+    res.status(500).json({ error: 'Error searching for song', details: error.message });
   }
 });
 
@@ -38,8 +47,8 @@ app.get('/songs/:id', async (req, res) => {
     console.log('Song details:', JSON.stringify(song, null, 2));
     res.json(song);
   } catch (error) {
-    console.error('Error fetching song details:', error.message);
-    res.status(500).json({ error: 'Error fetching song details' });
+    console.error('Error fetching song details:', error);
+    res.status(500).json({ error: 'Error fetching song details', details: error.message });
   }
 });
 
@@ -62,8 +71,8 @@ app.get('/lyrics', async (req, res) => {
     }
     res.send(lyrics);
   } catch (error) {
-    console.error('Error fetching lyrics:', error.message);
-    res.status(500).json({ error: `Error fetching lyrics: ${error.message}` });
+    console.error('Error fetching lyrics:', error);
+    res.status(500).json({ error: 'Error fetching lyrics', details: error.message });
   }
 });
 
@@ -92,8 +101,8 @@ app.get('/search-artist', async (req, res) => {
 
     res.json(uniqueArtists);
   } catch (error) {
-    console.error('Error searching for artist:', error.message);
-    res.status(500).json({ error: 'Error searching for artist: ' + error.message });
+    console.error('Error searching for artist:', error);
+    res.status(500).json({ error: 'Error searching for artist', details: error.message });
   }
 });
 
@@ -106,11 +115,11 @@ app.get('/artists/:id/songs', async (req, res) => {
     try {
       while (true) {
         const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
-          params: { page, sort: 'release_date' },  // Sort by release date
+          params: { page, sort: 'release_date', per_page: 50 },  // Increased per_page for efficiency
           headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
         });
   
-        console.log('Artist songs response:', JSON.stringify(response.data, null, 2));
+        console.log(`Fetched page ${page} of artist songs`);
   
         const songs = response.data.response.songs;
         if (songs.length === 0) break;
@@ -120,12 +129,6 @@ app.get('/artists/:id/songs', async (req, res) => {
   
         // Limit to 5 pages to avoid potential infinite loops
         if (page > 5) break;
-      }
-  
-      // Log a sample song to check its structure
-      if (allSongs.length > 0) {
-        console.log('Sample song data:', JSON.stringify(allSongs[0], null, 2));
-        console.log('Sample song release date components:', allSongs[0]?.release_date_components);
       }
   
       // Sort the songs by release date
@@ -153,13 +156,18 @@ app.get('/artists/:id/songs', async (req, res) => {
   
       res.json(formattedSongs);
     } catch (error) {
-      console.error('Error fetching artist songs:', error.message);
+      console.error('Error fetching artist songs:', error);
       if (error.response) {
         console.error('Error Response:', error.response.data);
       }
-      res.status(500).json({ error: 'Error fetching artist songs' });
+      res.status(500).json({ error: 'Error fetching artist songs', details: error.message });
     }
-  });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
