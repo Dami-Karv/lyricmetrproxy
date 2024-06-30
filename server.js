@@ -1,6 +1,6 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
+const { getLyrics, getSong, searchSong, getSongById } = require('genius-lyrics-api');
 require('dotenv').config();
 
 const app = express();
@@ -10,107 +10,93 @@ app.use(cors());
 
 app.get('/search', async (req, res) => {
   const query = req.query.q;
+  const options = {
+    apiKey: process.env.REACT_APP_GENIUS_ACCESS_TOKEN,
+    title: query,
+    artist: '',
+    optimizeQuery: true
+  };
+
   try {
-    const response = await axios.get(`https://api.genius.com/search?q=${encodeURIComponent(query)}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
-      }
-    });
-    res.json(response.data);
+    const results = await searchSong(options);
+    res.json(results);
   } catch (error) {
-    console.error('Error fetching search results from Genius API:', error.message);
-    res.status(500).json({ error: 'Error fetching search results from Genius API' });
+    console.error('Error searching for song:', error.message);
+    res.status(500).json({ error: 'Error searching for song' });
   }
 });
 
 app.get('/songs/:id', async (req, res) => {
   const songId = req.params.id;
+
   try {
-    const response = await axios.get(`https://api.genius.com/songs/${songId}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
-      }
-    });
-    res.json(response.data);
+    const song = await getSongById(songId, process.env.REACT_APP_GENIUS_ACCESS_TOKEN);
+    res.json(song);
   } catch (error) {
-    console.error('Error fetching song from Genius API:', error.message);
-    res.status(500).json({ error: 'Error fetching song from Genius API' });
+    console.error('Error fetching song details:', error.message);
+    res.status(500).json({ error: 'Error fetching song details' });
   }
 });
 
 app.get('/lyrics', async (req, res) => {
   const songPath = req.query.path;
-  const url = `https://genius.com${songPath}`;
-  console.log(`Fetching lyrics from URL: ${url}`);
+
   try {
-    const response = await axios.get(url);
-    console.log('Response from Genius lyrics page:', response.data);
-    res.send(response.data);
+    const lyrics = await getLyrics(songPath);
+    res.send(lyrics);
   } catch (error) {
-    console.error('Error fetching lyrics from Genius:', error.message);
-    res.status(500).json({ error: 'Error fetching lyrics from Genius' });
+    console.error('Error fetching lyrics:', error.message);
+    res.status(500).json({ error: 'Error fetching lyrics' });
   }
 });
 
 app.get('/artists/:id/albums', async (req, res) => {
+  // Placeholder implementation as the `genius-lyrics-api` does not provide a direct method for this
   const artistId = req.params.id;
+  const options = {
+    apiKey: process.env.REACT_APP_GENIUS_ACCESS_TOKEN,
+    id: artistId
+  };
+
   try {
-    const response = await axios.get(`https://api.genius.com/artists/${artistId}/albums`, {
-      headers: {
-        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
-      }
-    });
-    res.json(response.data);
+    // Fetch artist details and albums here if `genius-lyrics-api` provides such functionality
+    res.status(501).json({ error: 'Not Implemented' });
   } catch (error) {
     console.error('Error fetching artist albums from Genius API:', error.message);
-    if (error.response) {
-      console.error('Error status:', error.response.status);
-      console.error('Error data:', error.response.data);
-    } else {
-      console.error('Error details:', error);
-    }
     res.status(500).json({ error: 'Error fetching artist albums from Genius API' });
   }
 });
 
 app.get('/albums/:id', async (req, res) => {
+  // Placeholder implementation as the `genius-lyrics-api` does not provide a direct method for this
   const albumId = req.params.id;
+  const options = {
+    apiKey: process.env.REACT_APP_GENIUS_ACCESS_TOKEN,
+    id: albumId
+  };
+
   try {
-    const response = await axios.get(`https://api.genius.com/albums/${albumId}`, {
-      headers: {
-        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
-      }
-    });
-    res.json(response.data);
+    // Fetch album details here if `genius-lyrics-api` provides such functionality
+    res.status(501).json({ error: 'Not Implemented' });
   } catch (error) {
     console.error('Error fetching album details from Genius API:', error.message);
-    if (error.response) {
-      console.error('Error status:', error.response.status);
-      console.error('Error data:', error.response.data);
-    } else {
-      console.error('Error details:', error);
-    }
     res.status(500).json({ error: 'Error fetching album details from Genius API' });
   }
 });
 
 app.get('/albums/:id/tracks', async (req, res) => {
+  // Placeholder implementation as the `genius-lyrics-api` does not provide a direct method for this
   const albumId = req.params.id;
+  const options = {
+    apiKey: process.env.REACT_APP_GENIUS_ACCESS_TOKEN,
+    id: albumId
+  };
+
   try {
-    const response = await axios.get(`https://api.genius.com/albums/${albumId}/tracks`, {
-      headers: {
-        Authorization: `Bearer ${process.env.REACT_APP_GENIUS_ACCESS_TOKEN}`
-      }
-    });
-    res.json(response.data);
+    // Fetch album tracks here if `genius-lyrics-api` provides such functionality
+    res.status(501).json({ error: 'Not Implemented' });
   } catch (error) {
     console.error('Error fetching album tracks from Genius API:', error.message);
-    if (error.response) {
-      console.error('Error status:', error.response.status);
-      console.error('Error data:', error.response.data);
-    } else {
-      console.error('Error details:', error);
-    }
     res.status(500).json({ error: 'Error fetching album tracks from Genius API' });
   }
 });
