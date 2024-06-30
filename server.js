@@ -40,6 +40,11 @@ app.get('/songs/:id', async (req, res) => {
 
 app.get('/lyrics', async (req, res) => {
   const songPath = req.query.path;
+  const options = {
+    apiKey: process.env.REACT_APP_GENIUS_ACCESS_TOKEN,
+    title: '',
+    artist: ''
+  };
 
   try {
     const lyrics = await getLyrics(songPath);
@@ -47,57 +52,6 @@ app.get('/lyrics', async (req, res) => {
   } catch (error) {
     console.error('Error fetching lyrics:', error.message);
     res.status(500).json({ error: 'Error fetching lyrics' });
-  }
-});
-
-app.get('/artists/:id/albums', async (req, res) => {
-  // Placeholder implementation as the `genius-lyrics-api` does not provide a direct method for this
-  const artistId = req.params.id;
-  const options = {
-    apiKey: process.env.REACT_APP_GENIUS_ACCESS_TOKEN,
-    id: artistId
-  };
-
-  try {
-    // Fetch artist details and albums here if `genius-lyrics-api` provides such functionality
-    res.status(501).json({ error: 'Not Implemented' });
-  } catch (error) {
-    console.error('Error fetching artist albums from Genius API:', error.message);
-    res.status(500).json({ error: 'Error fetching artist albums from Genius API' });
-  }
-});
-
-app.get('/albums/:id', async (req, res) => {
-  // Placeholder implementation as the `genius-lyrics-api` does not provide a direct method for this
-  const albumId = req.params.id;
-  const options = {
-    apiKey: process.env.REACT_APP_GENIUS_ACCESS_TOKEN,
-    id: albumId
-  };
-
-  try {
-    // Fetch album details here if `genius-lyrics-api` provides such functionality
-    res.status(501).json({ error: 'Not Implemented' });
-  } catch (error) {
-    console.error('Error fetching album details from Genius API:', error.message);
-    res.status(500).json({ error: 'Error fetching album details from Genius API' });
-  }
-});
-
-app.get('/albums/:id/tracks', async (req, res) => {
-  // Placeholder implementation as the `genius-lyrics-api` does not provide a direct method for this
-  const albumId = req.params.id;
-  const options = {
-    apiKey: process.env.REACT_APP_GENIUS_ACCESS_TOKEN,
-    id: albumId
-  };
-
-  try {
-    // Fetch album tracks here if `genius-lyrics-api` provides such functionality
-    res.status(501).json({ error: 'Not Implemented' });
-  } catch (error) {
-    console.error('Error fetching album tracks from Genius API:', error.message);
-    res.status(500).json({ error: 'Error fetching album tracks from Genius API' });
   }
 });
 
