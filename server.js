@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-const { exec } = require('child_process');
 const { getLyrics, getSong, searchSong, getSongById } = require('genius-lyrics-api');
 
 const app = express();
@@ -94,25 +93,6 @@ app.get('/search-artist', async (req, res) => {
     console.error('Error searching for artist:', error.message);
     res.status(500).json({ error: 'Error searching for artist: ' + error.message });
   }
-});
-
-app.get('/artists/:id/albums', (req, res) => {
-  const artistId = req.params.id;
-
-  exec(`python fetch_album_details.py ${artistId}`, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error executing python script: ${error.message}`);
-      res.status(500).json({ error: 'Error fetching artist albums' });
-      return;
-    }
-    if (stderr) {
-      console.error(`stderr: ${stderr}`);
-      res.status(500).json({ error: 'Error fetching artist albums' });
-      return;
-    }
-
-    res.json(JSON.parse(stdout));
-  });
 });
 
 app.get('/artists/:id/songs', async (req, res) => {
