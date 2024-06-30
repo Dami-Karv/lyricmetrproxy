@@ -97,14 +97,27 @@ app.get('/search-artist', async (req, res) => {
 
 app.get('/artists/:id/songs', async (req, res) => {
   const artistId = req.params.id;
+  let page = 1;
+  let allSongs = [];
 
   try {
-    const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
-      headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
-    });
+    while (true) {
+      const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
+        params: { page, sort: 'asc' },
+        headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
+      });
 
-    const songs = response.data.response.songs;
-    res.json(songs);
+      const songs = response.data.response.songs;
+      if (songs.length === 0) break;
+
+      allSongs = allSongs.concat(songs);
+      page++;
+    }
+
+    // Sort the songs by release date
+    allSongs.sort((a, b) => new Date(a.release_date) - new Date(b.release_date));
+
+    res.json(allSongs);
   } catch (error) {
     console.error('Error fetching artist songs:', error.message);
     res.status(500).json({ error: 'Error fetching artist songs' });
