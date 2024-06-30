@@ -44,12 +44,14 @@ app.get('/lyrics', async (req, res) => {
   const options = {
     apiKey: GENIUS_ACCESS_TOKEN,
     title: '',
-    artist: ''
+    artist: '',
+    optimizeQuery: true
   };
 
   try {
     console.log(`Fetching lyrics for path: ${songPath}`);
-    const lyrics = await getLyrics(songPath);
+    const encodedPath = encodeURIComponent(songPath);
+    const lyrics = await getLyrics(`https://genius.com${encodedPath}`);
     if (!lyrics) {
       return res.status(404).json({ error: 'Lyrics not found' });
     }
