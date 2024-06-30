@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 const { getLyrics, getSong, searchSong, getSongById } = require('genius-lyrics-api');
 
 const app = express();
@@ -63,6 +64,39 @@ app.get('/lyrics', async (req, res) => {
     console.error('Error fetching lyrics:', error.message);
     console.error('Full error:', error);
     res.status(500).json({ error: `Error fetching lyrics: ${error.message}` });
+  }
+});
+
+app.get('/search-artist', async (req, res) => {
+  const query = req.query.q;
+  const options = {
+    apiKey: GENIUS_ACCESS_TOKEN,
+    title: query,
+    optimizeQuery: true
+  };
+
+  try {
+    const results = await searchSong(options);
+    // Filter results to only include artists
+    const artists = results.filter(result => result.type === 'artist');
+    res.json(artists);
+  } catch (error) {
+    console.error('Error searching for artist:', error.message);
+    res.status(500).json({ error: 'Error searching for artist' });
+  }
+});
+
+app.get('/artist-albums/:artistId', async (req, res) => {
+  const artistId = req.params.artistId;
+
+  try {
+    const response = await axios.get(`https://api.genius.com/artists/${artistId}/albums`, {
+      headers: { 'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}` }
+    });
+    res.json(response.data.response.albums);
+  } catch (error) {
+    console.error('Error fetching artist albums:', error.message);
+    res.status(500).json({ error: 'Error fetching artist albums' });
   }
 });
 
