@@ -125,6 +125,50 @@ app.get('/search-artist', async (req, res) => {
   }
 });
 
+app.get('/artist-songs-word-frequency', async (req, res) => {
+    const { artistId, startYear, endYear, word } = req.query;
+    let page = 1;
+    let allSongs = [];
+    const wordFrequency = {};
+  
+    try {
+      while (true) {
+        const response = await axios.get(`https://api.genius.com/artists/${artistId}/songs`, {
+          params: { page, sort: 'release_date', per_page: 50 },
+          headers: { Authorization: `Bearer ${GENIUS_ACCESS_TOKEN}` }
+        });
+  
+        const songs = response.data.response.songs;
+        if (songs.length === 0) break;
+  
+        allSongs = allSongs.concat(songs);
+        page++;
+  
+        if (page > 5) break;
+      }
+  
+      for (const song of allSongs) {
+        const year = song.release_date_components?.year;
+        if (year >= startYear && year <= endYear) {
+          try {
+            const lyricsResponse = await getLyrics(song.url);
+            if (lyricsResponse) {
+              const count = (lyricsResponse.match(new RegExp(word, 'gi')) || []).length;
+              wordFrequency[year] = (wordFrequency[year] || 0) + count;
+            }
+          } catch (error) {
+            console.error(`Error fetching lyrics for song ${song.title}:`, error);
+          }
+        }
+      }
+  
+      res.json(wordFrequency);
+    } catch (error) {
+      console.error('Error fetching artist songs:', error);
+      res.status(500).json({ error: 'Error fetching artist songs', details: error.message });
+    }
+  });
+  
 // Endpoint to get songs of an artist by ID
 app.get('/artists/:id/songs', async (req, res) => {
     const artistId = req.params.id;
