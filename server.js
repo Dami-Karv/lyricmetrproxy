@@ -52,29 +52,48 @@ app.get('/songs/:id', async (req, res) => {
   }
 });
 
-// Endpoint to get lyrics of a song by path
-app.get('/lyrics', async (req, res) => {
-  const songPath = req.query.path;
+// Endpoint to get lyrics of a song by ID
+app.get('/lyrics/:id', async (req, res) => {
+  const songId = req.params.id;
 
   try {
-    console.log(`Fetching lyrics for path: ${songPath}`);
-    
-    const cleanPath = songPath.startsWith('/') ? songPath.slice(1) : songPath;
-    const fullUrl = `https://genius.com/${cleanPath}`;
-    
-    console.log(`Attempting to fetch lyrics from: ${fullUrl}`);
-    
-    const lyrics = await getLyrics(fullUrl);
-    
+    const song = await getSongById(songId, GENIUS_ACCESS_TOKEN);
+    if (!song || !song.path) {
+      return res.status(404).json({ error: 'Song not found' });
+    }
+
+    const lyrics = await getLyrics(`https://genius.com${song.path}`);
     if (!lyrics) {
       return res.status(404).json({ error: 'Lyrics not found' });
     }
-    res.send(lyrics);
+
+    res.json({ lyrics });
   } catch (error) {
     console.error('Error fetching lyrics:', error);
     res.status(500).json({ error: 'Error fetching lyrics', details: error.message });
   }
 });
+
+// Endpoint to get lyrics of a song by URL
+app.get('/lyrics-by-url', async (req, res) => {
+    const songUrl = req.query.url;
+  
+    if (!songUrl) {
+      return res.status(400).json({ error: 'Song URL is required' });
+    }
+  
+    try {
+      const lyrics = await getLyrics(songUrl);
+      if (!lyrics) {
+        return res.status(404).json({ error: 'Lyrics not found' });
+      }
+  
+      res.json({ lyrics });
+    } catch (error) {
+      console.error('Error fetching lyrics:', error);
+      res.status(500).json({ error: 'Error fetching lyrics', details: error.message });
+    }
+  });
 
 // Endpoint to search for an artist
 app.get('/search-artist', async (req, res) => {
